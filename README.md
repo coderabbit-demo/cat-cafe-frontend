@@ -14,6 +14,8 @@ To smoke-test the port contract, start the backend with
 `curl --fail 'http://localhost:8444/api/v1/availability?date=2026-08-11'` and
 verify it returns availability JSON.
 
-Slack account-linking sends unregistered customers to `/register` with their
-Slack identity in the query string; registration returns them to the reservation
-flow.
+## Background: CodeRabbit demo use case
+
+This repo models the smallest possible microservice architecture: one frontend service (this repository) and one [backend](https://github.com/coderabbit-demo/cat-cafe-backend). Together they can be used to demonstrate both [automatic](https://docs.coderabbit.ai/knowledge-base/multi-repo-analysis#automatic-repository-linking) and [manual](https://docs.coderabbit.ai/knowledge-base/multi-repo-analysis#setting-it-up) repository linking.
+
+PRs are scoped to a single repository, but shipping a feature or fix often requires carefully coordinated changes across several. Multi-repo analysis gives CodeRabbit visibility across that boundary, which organizations use to improve review comprehension, release velocity, and efficiency.
