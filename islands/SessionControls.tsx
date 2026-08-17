@@ -4,6 +4,7 @@ import type { User } from "../lib/types.ts";
 
 export default function SessionControls() {
   const user = useSignal<User | null | undefined>(undefined);
+  const error = useSignal("");
 
   useEffect(() => {
     fetch("/api/auth/me").then(async (response) => {
@@ -12,7 +13,13 @@ export default function SessionControls() {
   }, []);
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    error.value = "";
+    const response = await fetch("/api/auth/logout", { method: "POST" })
+      .catch(() => null);
+    if (!response?.ok) {
+      error.value = "Sign out failed. Please try again.";
+      return;
+    }
     location.href = "/";
   }
 
@@ -24,6 +31,7 @@ export default function SessionControls() {
       <button type="button" class="link-button" onClick={logout}>
         Sign out
       </button>
+      {error.value && <span class="error" role="alert">{error}</span>}
     </span>
   );
 }
