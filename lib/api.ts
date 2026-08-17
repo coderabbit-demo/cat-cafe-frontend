@@ -1,4 +1,4 @@
-import type { Reservation, Tea } from "./types.ts";
+import type { Tea } from "./types.ts";
 
 const baseUrl = Deno.env.get("CAT_CAFE_API_URL") ?? "http://localhost:8444";
 const serviceToken = Deno.env.get("CAT_CAFE_API_TOKEN") ??
@@ -15,10 +15,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   teas: () => request<Tea[]>("/api/v1/teas"),
-  reservations: (userId: string) =>
-    request<Reservation[]>(
-      `/api/v1/reservations?user_id=${encodeURIComponent(userId)}`,
-    ),
   register: (email: string) =>
     request<{ id: string; email: string }>("/api/v1/auth/register", {
       method: "POST",
