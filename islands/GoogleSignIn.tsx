@@ -1,5 +1,6 @@
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";
+import { publishSessionChanged } from "../lib/session.ts";
 import type { User } from "../lib/types.ts";
 
 const LOAD_RETRY_MS = 50;
@@ -67,7 +68,9 @@ export default function GoogleSignIn({
             error.value = "Google sign-in failed. Please try again.";
             return;
           }
-          onSuccess(await response.json() as User);
+          const user = await response.json() as User;
+          publishSessionChanged();
+          onSuccess(user);
         },
       });
       button.current.replaceChildren();

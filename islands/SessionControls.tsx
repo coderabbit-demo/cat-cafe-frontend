@@ -1,15 +1,24 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
+import { SESSION_CHANGED_EVENT } from "../lib/session.ts";
 import type { User } from "../lib/types.ts";
 
 export default function SessionControls() {
   const user = useSignal<User | null | undefined>(undefined);
   const error = useSignal("");
 
-  useEffect(() => {
+  function refreshUser() {
     fetch("/api/auth/me").then(async (response) => {
       user.value = response.ok ? await response.json() as User : null;
     }).catch(() => user.value = null);
+  }
+
+  useEffect(() => {
+    const refresh = () => void refreshUser();
+    refresh();
+    globalThis.window.addEventListener(SESSION_CHANGED_EVENT, refresh);
+    return () =>
+      globalThis.window.removeEventListener(SESSION_CHANGED_EVENT, refresh);
   }, []);
 
   async function logout() {
