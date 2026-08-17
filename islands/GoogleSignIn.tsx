@@ -2,6 +2,9 @@ import { useSignal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";
 import type { User } from "../lib/types.ts";
 
+const LOAD_RETRY_MS = 50;
+const MAX_LOAD_ATTEMPTS = 100;
+
 interface CredentialResponse {
   credential: string;
 }
@@ -39,9 +42,16 @@ export default function GoogleSignIn({
     }
 
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let attempts = 0;
     const render = () => {
       if (!globalThis.window.google || !button.current) {
-        timer = setTimeout(render, 50);
+        if (attempts >= MAX_LOAD_ATTEMPTS) {
+          error.value =
+            "Google sign-in could not be loaded. Please refresh and try again.";
+          return;
+        }
+        attempts += 1;
+        timer = setTimeout(render, LOAD_RETRY_MS);
         return;
       }
       globalThis.window.google.accounts.id.initialize({
