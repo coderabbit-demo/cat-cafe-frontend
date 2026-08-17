@@ -14,6 +14,7 @@ export default function ReservationForm({
   const slots = useSignal<string[]>([]);
   const message = useSignal("");
   const user = useSignal<User | null | undefined>(undefined);
+  const submitting = useSignal(false);
 
   useEffect(() => {
     fetch("/api/auth/me").then(async (response) => {
@@ -31,31 +32,37 @@ export default function ReservationForm({
 
   async function submit(event: Event) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget as HTMLFormElement);
-    const response = await fetch("/api/reservations", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        reservation_date: form.get("date"),
-        start_time: form.get("start_time"),
-        guest_count: Number(form.get("guest_count")),
-        tea_id: form.get("tea_id") || null,
-        notes: form.get("notes") || null,
-      }),
-    }).catch(() => null);
-    if (response?.status === 401) {
-      user.value = null;
-      message.value = "Please sign in before booking.";
-    } else if (response?.status === 409) {
-      message.value =
-        "That time is no longer available. Please choose another.";
-    } else if (!response?.ok) {
-      message.value = "Booking failed. Please check the form and try again.";
-    } else {
-      message.value = "Your visit is booked. See it under My reservations.";
-      (event.currentTarget as HTMLFormElement).reset();
-      date.value = "";
-      slots.value = [];
+    if (submitting.value) return;
+    submitting.value = true;
+    try {
+      const form = new FormData(event.currentTarget as HTMLFormElement);
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          reservation_date: form.get("date"),
+          start_time: form.get("start_time"),
+          guest_count: Number(form.get("guest_count")),
+          tea_id: form.get("tea_id") || null,
+          notes: form.get("notes") || null,
+        }),
+      }).catch(() => null);
+      if (response?.status === 401) {
+        user.value = null;
+        message.value = "Please sign in before booking.";
+      } else if (response?.status === 409) {
+        message.value =
+          "That time is no longer available. Please choose another.";
+      } else if (!response?.ok) {
+        message.value = "Booking failed. Please check the form and try again.";
+      } else {
+        message.value = "Your visit is booked. See it under My reservations.";
+        (event.currentTarget as HTMLFormElement).reset();
+        date.value = "";
+        slots.value = [];
+      }
+    } finally {
+      submitting.value = false;
     }
   }
 
@@ -113,7 +120,7 @@ export default function ReservationForm({
           placeholder="Window seat if possible."
         />
       </label>
-      <button type="submit">Book visit</button>
+      <button type="submit" disabled={submitting.value}>Book visit</button>
       {message.value && <p class="notice">{message}</p>}
     </form>
   );
