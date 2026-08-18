@@ -42,6 +42,7 @@ export async function proxyBackend(
     const value = upstream.headers.get(name);
     if (value) responseHeaders.set(name, value);
   }
+  responseHeaders.set("Cache-Control", "no-store");
   return new Response(upstream.body, {
     status: upstream.status,
     headers: responseHeaders,
