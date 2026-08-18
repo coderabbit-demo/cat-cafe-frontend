@@ -1,10 +1,26 @@
 import { useSignal } from "@preact/signals";
-import type { Tea } from "../lib/types.ts";
+import { useEffect } from "preact/hooks";
+import type { Tea, User } from "../lib/types.ts";
+import GoogleSignIn from "./GoogleSignIn.tsx";
 
-export default function ReservationForm({ teas }: { teas: Tea[] }) {
+export default function ReservationForm({
+  teas,
+  googleClientId,
+}: {
+  teas: Tea[];
+  googleClientId: string;
+}) {
   const date = useSignal("");
   const slots = useSignal<string[]>([]);
   const message = useSignal("");
+  const user = useSignal<User | null | undefined>(undefined);
+  const submitting = useSignal(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me").then(async (response) => {
+      user.value = response.ok ? await response.json() as User : null;
+    }).catch(() => user.value = null);
+  }, []);
 
   async function loadSlots(nextDate: string) {
     date.value = nextDate;
@@ -14,10 +30,54 @@ export default function ReservationForm({ teas }: { teas: Tea[] }) {
       : [];
   }
 
-  function submit(event: Event) {
+  async function submit(event: Event) {
     event.preventDefault();
-    message.value =
-      "Starter form is ready; connect user authentication to submit reservations.";
+    if (submitting.value) return;
+    submitting.value = true;
+    try {
+      const form = new FormData(event.currentTarget as HTMLFormElement);
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          reservation_date: form.get("date"),
+          start_time: form.get("start_time"),
+          guest_count: Number(form.get("guest_count")),
+          tea_id: form.get("tea_id") || null,
+          notes: form.get("notes") || null,
+        }),
+      }).catch(() => null);
+      if (response?.status === 401) {
+        user.value = null;
+        message.value = "Please sign in before booking.";
+      } else if (response?.status === 409) {
+        message.value =
+          "That time is no longer available. Please choose another.";
+      } else if (!response?.ok) {
+        message.value = "Booking failed. Please check the form and try again.";
+      } else {
+        message.value = "Your visit is booked. See it under My reservations.";
+        (event.currentTarget as HTMLFormElement).reset();
+        date.value = "";
+        slots.value = [];
+      }
+    } finally {
+      submitting.value = false;
+    }
+  }
+
+  if (user.value === undefined) return <p>Checking sign-in…</p>;
+  if (user.value === null) {
+    return (
+      <div>
+        <p>Sign in with Google to reserve your visit.</p>
+        <GoogleSignIn
+          clientId={googleClientId}
+          onSuccess={(value) => user.value = value}
+        />
+        {message.value && <p class="notice">{message}</p>}
+      </div>
+    );
   }
 
   return (
@@ -60,7 +120,7 @@ export default function ReservationForm({ teas }: { teas: Tea[] }) {
           placeholder="Window seat if possible."
         />
       </label>
-      <button type="submit">Book visit</button>
+      <button type="submit" disabled={submitting.value}>Book visit</button>
       {message.value && <p class="notice">{message}</p>}
     </form>
   );

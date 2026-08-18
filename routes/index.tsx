@@ -3,14 +3,22 @@ import ReservationForm from "../islands/ReservationForm.tsx";
 import { api } from "../lib/api.ts";
 import type { Tea } from "../lib/types.ts";
 
-export const handler: Handlers<Tea[]> = {
+interface Data {
+  teas: Tea[];
+  googleClientId: string;
+}
+
+export const handler: Handlers<Data> = {
   async GET(_req, ctx) {
     const teas = await api.teas().catch(() => []);
-    return ctx.render(teas);
+    return ctx.render({
+      teas,
+      googleClientId: Deno.env.get("GOOGLE_CLIENT_ID") ?? "",
+    });
   },
 };
 
-export default function Home({ data: teas }: PageProps<Tea[]>) {
+export default function Home({ data }: PageProps<Data>) {
   return (
     <>
       <section class="hero">
@@ -20,7 +28,10 @@ export default function Home({ data: teas }: PageProps<Tea[]>) {
       </section>
       <section class="card booking">
         <h2>Book a Cat Cafe visit</h2>
-        <ReservationForm teas={teas} />
+        <ReservationForm
+          teas={data.teas}
+          googleClientId={data.googleClientId}
+        />
       </section>
     </>
   );

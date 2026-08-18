@@ -1,4 +1,5 @@
 import type { ComponentChildren } from "preact";
+import SessionControls from "../islands/SessionControls.tsx";
 
 export function Layout({ children }: { children: ComponentChildren }) {
   return (
@@ -7,6 +8,7 @@ export function Layout({ children }: { children: ComponentChildren }) {
         <a class="brand" href="/">🐈 Cat Cafe</a>
         <nav>
           <a href="/reservations">My reservations</a>
+          <SessionControls />
         </nav>
       </header>
       <main>{children}</main>

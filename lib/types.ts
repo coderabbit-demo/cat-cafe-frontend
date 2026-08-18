@@ -13,3 +13,8 @@ export interface Reservation {
   tea_id?: string;
   notes?: string;
 }
+
+export interface User {
+  id: string;
+  email: string;
+}

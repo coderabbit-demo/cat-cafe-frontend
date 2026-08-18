@@ -3,23 +3,39 @@
 // This file is automatically updated during development when running `dev.ts`.
 
 import * as $_app from "./routes/_app.tsx";
+import * as $api_auth_google from "./routes/api/auth/google.ts";
+import * as $api_auth_logout from "./routes/api/auth/logout.ts";
+import * as $api_auth_me from "./routes/api/auth/me.ts";
 import * as $api_availability from "./routes/api/availability.ts";
+import * as $api_reservations_id_ from "./routes/api/reservations/[id].ts";
+import * as $api_reservations_index from "./routes/api/reservations/index.ts";
 import * as $index from "./routes/index.tsx";
 import * as $register_index from "./routes/register/index.tsx";
 import * as $reservations_index from "./routes/reservations/index.tsx";
+import * as $GoogleSignIn from "./islands/GoogleSignIn.tsx";
 import * as $ReservationForm from "./islands/ReservationForm.tsx";
+import * as $ReservationsManager from "./islands/ReservationsManager.tsx";
+import * as $SessionControls from "./islands/SessionControls.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
     "./routes/_app.tsx": $_app,
+    "./routes/api/auth/google.ts": $api_auth_google,
+    "./routes/api/auth/logout.ts": $api_auth_logout,
+    "./routes/api/auth/me.ts": $api_auth_me,
     "./routes/api/availability.ts": $api_availability,
+    "./routes/api/reservations/[id].ts": $api_reservations_id_,
+    "./routes/api/reservations/index.ts": $api_reservations_index,
     "./routes/index.tsx": $index,
     "./routes/register/index.tsx": $register_index,
     "./routes/reservations/index.tsx": $reservations_index,
   },
   islands: {
+    "./islands/GoogleSignIn.tsx": $GoogleSignIn,
     "./islands/ReservationForm.tsx": $ReservationForm,
+    "./islands/ReservationsManager.tsx": $ReservationsManager,
+    "./islands/SessionControls.tsx": $SessionControls,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;
